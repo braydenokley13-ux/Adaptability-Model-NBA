@@ -1,0 +1,92 @@
+{
+  "baseline_cv": {
+    "cv_scores": [
+      0.8110367892976588,
+      0.8358974358974359,
+      0.8192307692307692,
+      0.7847985347985348,
+      0.8310077519379844
+    ],
+    "cv_mean": 0.8163942562324766,
+    "cv_std": 0.01804974318186814
+  },
+  "tuning_results": {
+    "best_params": {
+      "classifier__n_estimators": 500,
+      "classifier__min_samples_split": 15,
+      "classifier__min_samples_leaf": 15,
+      "classifier__max_features": "log2",
+      "classifier__max_depth": 8
+    },
+    "best_score": 0.8376345978942712
+  },
+  "test_results": {
+    "accuracy": 0.7878787878787878,
+    "f1_weighted": 0.8111888111888111,
+    "f1_macro": 0.5805860805860805,
+    "per_class": {
+      "FADED": {
+        "precision": 0.9583333333333334,
+        "recall": 0.8214285714285714,
+        "f1": 0.8846153846153846
+      },
+      "SURVIVED": {
+        "precision": 0.25,
+        "recall": 0.3333333333333333,
+        "f1": 0.2857142857142857
+      },
+      "THRIVED": {
+        "precision": 0.4,
+        "recall": 1.0,
+        "f1": 0.5714285714285714
+      }
+    }
+  },
+  "feature_columns": [
+    "age30_USGpct",
+    "age30_ASTpct",
+    "age30_3PAr",
+    "age30_TSpct",
+    "age30_BPM",
+    "age30_WS_48",
+    "age30_MP",
+    "age30_PER",
+    "delta_USGpct_31",
+    "delta_ASTpct_31",
+    "delta_3PAr_31",
+    "delta_TSpct_31",
+    "delta_BPM_31",
+    "delta_WS_48_31",
+    "delta_MP_31",
+    "delta_PER_31",
+    "delta_USGpct_32",
+    "delta_ASTpct_32",
+    "delta_3PAr_32",
+    "delta_TSpct_32",
+    "delta_BPM_32",
+    "delta_WS_48_32",
+    "delta_MP_32",
+    "delta_PER_32",
+    "delta_USGpct_33",
+    "delta_ASTpct_33",
+    "delta_3PAr_33",
+    "delta_TSpct_33",
+    "delta_BPM_33",
+    "delta_WS_48_33",
+    "delta_MP_33",
+    "delta_PER_33",
+    "seasons_at_30",
+    "career_high_USG",
+    "career_avg_BPM",
+    "position_code",
+    "total_3PAr_change",
+    "total_USGpct_change",
+    "total_TSpct_change",
+    "total_ASTpct_change",
+    "adaptation_velocity_USG",
+    "adaptation_velocity_3PAr"
+  ],
+  "n_train": 129,
+  "n_test": 33,
+  "saved_at": "2026-01-22T22:23:59.572629"
+}
