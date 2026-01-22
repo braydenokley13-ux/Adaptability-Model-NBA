@@ -25,10 +25,22 @@ This project uses a Random Forest classifier trained on 162 players who turned 3
 ### 1. Install Dependencies
 
 ```bash
-pip install pandas numpy scikit-learn matplotlib seaborn joblib
+pip install -r requirements.txt
 ```
 
-### 2. Train the Model
+### 2. Launch the Web Interface
+
+```bash
+streamlit run app.py
+```
+
+This opens an interactive web app where you can:
+- **Select existing players** from a dropdown and see their prediction
+- **Input custom stats** using sliders and get instant predictions
+- **Explore model insights** including feature importance and key findings
+- **Read case studies** of players like Tim Duncan, Allen Iverson, Vince Carter
+
+### 3. Train the Model (Optional)
 
 ```bash
 python -m src.model_training
@@ -134,8 +146,10 @@ nba-adaptability-ml/
 │       ├── tim_duncan_trajectory.png
 │       ├── allen_iverson_trajectory.png
 │       └── ...
+├── app.py                      # Streamlit web interface
 ├── predict_player.py           # CLI prediction tool
 ├── Seasons_Stats.csv           # Raw data
+├── requirements.txt            # Python dependencies
 └── README.md
 ```
 
