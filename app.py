@@ -11,12 +11,13 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 import sys
+import os
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from src.prediction_engine import AdaptabilityPredictor, PredictionResult
-from src.utils import load_training_data, MODELS_DIR, VIZ_DIR
+from src.utils import load_training_data, MODELS_DIR, VIZ_DIR, PROCESSED_DIR, ensure_directories
+from src.prediction_engine import PredictionResult
 
 # Page config
 st.set_page_config(
@@ -89,9 +90,97 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
+def check_and_train_model():
+    """Check if model exists, train if not. Returns True if ready."""
+    model_path = MODELS_DIR / "adaptability_model.pkl"
+    features_path = MODELS_DIR / "feature_columns.pkl"
+    training_data_path = PROCESSED_DIR / "training_data.csv"
+
+    # Check if all required files exist
+    if model_path.exists() and features_path.exists() and training_data_path.exists():
+        return True
+
+    # Need to train - show setup UI
+    st.markdown("## 🔧 First Time Setup")
+    st.info("The model needs to be trained before first use. This only happens once and takes about 30-60 seconds.")
+
+    if st.button("🚀 Start Setup", type="primary"):
+        with st.spinner("Step 1/3: Building training data..."):
+            # Import and run data pipeline
+            from src.data_pipeline import load_and_clean_data, identify_eligible_players
+            from src.feature_engineering import build_training_dataset
+            from src.utils import create_train_test_split, save_train_test_split
+
+            ensure_directories()
+
+            # Load and process data
+            df = load_and_clean_data()
+            eligible = identify_eligible_players(df)
+
+            # Build features
+            features_df, labels, players = build_training_dataset(df, eligible)
+
+            # Save training data
+            full_df = features_df.copy()
+            full_df["Player"] = players.values
+            full_df["adaptability_tier"] = labels.values
+            full_df.to_csv(training_data_path, index=False)
+
+            # Create train/test split
+            train_df, test_df = create_train_test_split(full_df)
+            save_train_test_split(train_df, test_df)
+
+        with st.spinner("Step 2/3: Training model (this takes ~30 seconds)..."):
+            from src.model_training import train_baseline_model, tune_hyperparameters, save_model, get_feature_importances
+            from src.utils import get_feature_columns, load_train_test_split
+
+            train_df, test_df = load_train_test_split()
+            feature_cols = get_feature_columns(train_df)
+            X_train = train_df[feature_cols]
+            y_train = train_df["adaptability_tier"]
+
+            # Train with tuning
+            best_model, tune_results = tune_hyperparameters(X_train, y_train, n_iter=20)
+
+            # Get feature importances
+            importance_df = get_feature_importances(best_model, feature_cols)
+            importance_df.to_csv(MODELS_DIR / "feature_importances.csv", index=False)
+
+            # Save model
+            metadata = {
+                "tuning_results": {
+                    "best_params": tune_results["best_params"],
+                    "best_score": tune_results["best_score"],
+                },
+                "feature_columns": feature_cols,
+                "n_train": len(X_train),
+            }
+            save_model(best_model, feature_cols, metadata)
+
+        with st.spinner("Step 3/3: Finalizing..."):
+            import time
+            time.sleep(1)
+
+        st.success("✅ Setup complete! Please click the button below to start the app.")
+        if st.button("🏀 Launch App"):
+            st.rerun()
+        return False
+
+    return False
+
+
+def is_model_ready():
+    """Quick check if model files exist."""
+    model_path = MODELS_DIR / "adaptability_model.pkl"
+    features_path = MODELS_DIR / "feature_columns.pkl"
+    training_data_path = PROCESSED_DIR / "training_data.csv"
+    return model_path.exists() and features_path.exists() and training_data_path.exists()
+
+
 @st.cache_resource
 def load_predictor():
     """Load the prediction model (cached)."""
+    from src.prediction_engine import AdaptabilityPredictor
     return AdaptabilityPredictor()
 
 
@@ -682,6 +771,12 @@ def page_case_studies():
 # MAIN APP
 # =============================================================================
 def main():
+    # Check if model is ready - if not, show setup page
+    if not is_model_ready():
+        st.markdown('<h1 class="main-header">🏀 NBA Adaptability Predictor</h1>', unsafe_allow_html=True)
+        check_and_train_model()
+        return
+
     # Sidebar navigation
     st.sidebar.markdown("# 🏀 Navigation")
 
